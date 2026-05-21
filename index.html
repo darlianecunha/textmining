@@ -3,256 +3,356 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>PDF Word Counter</title>
+<title>PDF Words → VOSviewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0B1120;--bg-2:#111827;--bg-3:#1A2436;--border:rgba(255,255,255,0.08);--border-hover:rgba(255,255,255,0.18);--text:#F0F4F8;--text-2:#94A3B8;--text-3:#64748B;--accent:#5DCAA5;--accent-dim:rgba(93,202,165,0.12);--danger:#F0997B;--radius:10px;--radius-lg:16px;--font:'Sora',sans-serif;--mono:'JetBrains Mono',monospace}
+:root{--bg:#0B1120;--bg2:#111827;--bg3:#1A2436;--bd:rgba(255,255,255,0.08);--bdh:rgba(255,255,255,0.18);--tx:#F0F4F8;--tx2:#94A3B8;--tx3:#64748B;--ac:#5DCAA5;--acd:rgba(93,202,165,0.12);--ach:#9FE1CB;--dg:#F0997B;--r:10px;--rl:16px;--fn:'Sora',sans-serif;--mo:'JetBrains Mono',monospace}
 html{scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh}
-.container{max-width:860px;margin:0 auto;padding:0 1.5rem}
-.header{border-bottom:1px solid var(--border);background:rgba(11,17,32,0.9);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100}
-.header-inner{max-width:860px;margin:0 auto;padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo-text{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);letter-spacing:-0.02em}
-.logo-text.small{font-size:13px}
-.accent{color:var(--accent)}
-.nav-links{display:flex;gap:1.5rem}
-.nav-link{font-size:13px;color:var(--text-2);text-decoration:none;transition:color .2s}
-.nav-link:hover{color:var(--text)}
-.hero{padding:5rem 0 3.5rem;border-bottom:1px solid var(--border)}
-.hero-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
-.hero-title{font-size:clamp(2rem,5vw,2.8rem);font-weight:600;line-height:1.15;letter-spacing:-0.03em;margin-bottom:1.25rem}
-.hero-sub{font-size:16px;color:var(--text-2);max-width:540px;line-height:1.7}
-.upload-section{padding:3rem 0 2rem}
-.drop-zone{position:relative;border:1.5px dashed var(--border-hover);border-radius:var(--radius-lg);padding:3.5rem 2rem;text-align:center;cursor:pointer;transition:border-color .25s,background .25s;background:var(--bg-2);overflow:hidden}
-.drop-zone:hover,.drop-zone:focus-visible{border-color:var(--accent);background:var(--accent-dim);outline:none}
-.drop-zone.over{border-color:var(--accent);background:var(--accent-dim)}
-.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.drop-inner{pointer-events:none}
-.drop-icon-wrap{color:var(--accent);margin-bottom:1rem;display:inline-block}
-.drop-title{font-size:17px;font-weight:500;color:var(--text);margin-bottom:.4rem}
-.drop-sub{font-size:13px;color:var(--text-2)}
-.drop-link{color:var(--accent)}
-#msg-area{min-height:1.5rem;margin-top:.75rem}
-.error-msg{font-size:13px;color:var(--danger);padding:.5rem .75rem;background:rgba(240,153,123,.1);border-radius:var(--radius);border:1px solid rgba(240,153,123,.2)}
-#files-list{margin-top:1rem;display:flex;flex-direction:column;gap:8px}
-.file-row{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;transition:border-color .2s}
-.file-row:hover{border-color:var(--border-hover)}
-.file-icon{color:var(--accent);flex-shrink:0}
-.file-name{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
-.file-words{font-family:var(--mono);font-size:12px;color:var(--accent);flex-shrink:0;min-width:100px;text-align:right}
-.prog-wrap{flex:0 0 80px}
-.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
-.file-remove{flex-shrink:0;background:none;border:none;color:var(--text-3);cursor:pointer;padding:2px 4px;border-radius:4px;font-size:18px;transition:color .2s;line-height:1}
-.file-remove:hover{color:var(--danger)}
-.results-section{padding:3rem 0;border-top:1px solid var(--border)}
-.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem}
-.results-title{font-size:20px;font-weight:600;letter-spacing:-0.02em}
-.results-actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn-ghost{display:flex;align-items:center;gap:6px;font-family:var(--font);font-size:13px;color:var(--text-2);background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;cursor:pointer;transition:border-color .2s,color .2s}
-.btn-ghost:hover{border-color:var(--border-hover);color:var(--text)}
-.btn-ghost.danger:hover{color:var(--danger);border-color:rgba(240,153,123,.4)}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:2rem}
-.stat-card{background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;display:flex;flex-direction:column;gap:6px}
-.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)}
-.stat-value{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--text);letter-spacing:-0.02em}
-.stat-value.accent{color:var(--accent)}
-.divider{height:1px;background:var(--border);margin:2rem 0}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem}
-@media(max-width:600px){.two-col{grid-template-columns:1fr}}
-.sub-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:.4rem;letter-spacing:-0.01em}
-.sub-note{font-size:11px;color:var(--text-3);margin-bottom:.75rem}
-.per-file-table{display:flex;flex-direction:column;gap:6px;margin-top:.75rem}
-.per-file-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg-3);border-radius:7px;border:1px solid var(--border);gap:10px}
-.per-file-name{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.per-file-count{font-family:var(--mono);font-size:12px;color:var(--accent);flex-shrink:0}
-.top-words{display:flex;flex-wrap:wrap;gap:6px;margin-top:.75rem}
-.word-badge{font-family:var(--mono);font-size:11px;padding:4px 10px;background:var(--bg-3);border:1px solid var(--border);border-radius:99px;color:var(--text-2);display:flex;gap:5px;align-items:center}
-.word-badge .wcount{color:var(--accent)}
-.how-section{padding:4rem 0;border-top:1px solid var(--border)}
-.section-title{font-size:22px;font-weight:600;letter-spacing:-0.03em;margin-bottom:2rem}
-.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem}
-.step{padding:1.5rem;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg)}
-.step-num{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.08em;display:block;margin-bottom:.75rem}
-.step h3{font-size:15px;font-weight:500;margin-bottom:.5rem}
-.step p{font-size:13px;color:var(--text-2);line-height:1.6}
-.faq-section{padding:4rem 0;border-top:1px solid var(--border)}
-.faq-list{display:flex;flex-direction:column;gap:8px}
-.faq-item{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
-.faq-item:hover{border-color:var(--border-hover)}
-.faq-item summary{padding:1rem 1.25rem;font-size:14px;font-weight:500;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;color:var(--text);user-select:none}
-.faq-item summary::-webkit-details-marker{display:none}
-.faq-item summary::after{content:'+';font-family:var(--mono);font-size:18px;color:var(--accent);transition:transform .2s;flex-shrink:0}
-.faq-item[open] summary::after{transform:rotate(45deg)}
-.faq-item p{padding:0 1.25rem 1rem;font-size:13px;color:var(--text-2);line-height:1.7;border-top:1px solid var(--border);padding-top:.75rem}
-.footer{border-top:1px solid var(--border);padding:2rem 0;background:var(--bg-2)}
-.footer-inner{display:flex;flex-direction:column;align-items:center;gap:.5rem;text-align:center}
-.footer p{font-size:12px;color:var(--text-3)}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(1rem);background:var(--accent);color:#04342C;font-size:13px;font-weight:500;padding:8px 20px;border-radius:99px;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:999}
+body{font-family:var(--fn);background:var(--bg);color:var(--tx);font-size:15px;line-height:1.6;min-height:100vh}
+.wrap{max-width:880px;margin:0 auto;padding:0 1.5rem}
+/* HEADER */
+.hdr{border-bottom:1px solid var(--bd);background:rgba(11,17,32,.92);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.hdr-in{max-width:880px;margin:0 auto;padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-tx{font-family:var(--mo);font-size:14px;font-weight:500;color:var(--tx);letter-spacing:-.02em}
+.ac{color:var(--ac)}
+.nav{display:flex;gap:1.5rem}
+.nav a{font-size:13px;color:var(--tx2);text-decoration:none;transition:color .2s}
+.nav a:hover{color:var(--tx)}
+/* HERO */
+.hero{padding:4.5rem 0 3rem;border-bottom:1px solid var(--bd)}
+.hero-lbl{font-family:var(--mo);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:1rem}
+.hero-h1{font-size:clamp(1.9rem,5vw,2.7rem);font-weight:600;line-height:1.15;letter-spacing:-.03em;margin-bottom:1.2rem}
+.hero-sub{font-size:15px;color:var(--tx2);max-width:560px;line-height:1.75}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:1.5rem}
+.badge{font-family:var(--mo);font-size:11px;padding:4px 12px;border-radius:99px;border:1px solid var(--bd);color:var(--tx3)}
+.badge.hi{border-color:rgba(93,202,165,.35);color:var(--ac)}
+/* SECTIONS */
+.sec{padding:2.5rem 0}
+.sec-title{font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:1.25rem}
+/* DROP ZONE */
+.drop{position:relative;border:1.5px dashed var(--bdh);border-radius:var(--rl);padding:3rem 2rem;text-align:center;cursor:pointer;transition:border-color .25s,background .25s;background:var(--bg2)}
+.drop:hover,.drop:focus-visible{border-color:var(--ac);background:var(--acd);outline:none}
+.drop.over{border-color:var(--ac);background:var(--acd)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-in{pointer-events:none}
+.drop-ico{color:var(--ac);margin-bottom:.9rem;display:inline-block}
+.drop-h{font-size:16px;font-weight:500;margin-bottom:.35rem}
+.drop-s{font-size:13px;color:var(--tx2)}
+.drop-link{color:var(--ac)}
+/* FILES LIST */
+#files{margin-top:1rem;display:flex;flex-direction:column;gap:7px}
+.frow{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:.7rem 1rem;transition:border-color .2s}
+.frow:hover{border-color:var(--bdh)}
+.frow .fn{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .fw{font-family:var(--mo);font-size:12px;color:var(--ac);flex-shrink:0;min-width:90px;text-align:right}
+.pb{flex:0 0 70px}
+.pbar{height:3px;background:var(--bd);border-radius:2px;overflow:hidden}
+.pfill{height:100%;background:var(--ac);border-radius:2px;transition:width .3s}
+.frm{flex-shrink:0;background:none;border:none;color:var(--tx3);cursor:pointer;padding:2px 4px;font-size:18px;transition:color .2s;line-height:1}
+.frm:hover{color:var(--dg)}
+#msg{min-height:1.5rem;margin-top:.6rem}
+.err{font-size:13px;color:var(--dg);padding:.45rem .75rem;background:rgba(240,153,123,.1);border-radius:var(--r);border:1px solid rgba(240,153,123,.2)}
+/* PARAMS */
+.params-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.param-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:1rem}
+.param-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.5rem;display:block}
+.param-row{display:flex;align-items:center;gap:8px}
+.param-row input[type=range]{flex:1}
+.param-val{font-family:var(--mo);font-size:13px;color:var(--ac);min-width:28px;text-align:right}
+.param-hint{font-size:11px;color:var(--tx3);margin-top:.35rem}
+/* ACTIONS */
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:1.5rem}
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--fn);font-size:13px;font-weight:500;padding:9px 18px;border-radius:var(--r);cursor:pointer;transition:all .2s;border:none;text-decoration:none}
+.btn-primary{background:var(--ac);color:#04342C}
+.btn-primary:hover{background:var(--ach)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:var(--bg2);color:var(--tx2);border:1px solid var(--bd)}
+.btn-ghost:hover{border-color:var(--bdh);color:var(--tx)}
+.btn-ghost:disabled{opacity:.4;cursor:not-allowed}
+.btn-vos{background:#0F6E56;color:#E1F5EE}
+.btn-vos:hover{background:#1D9E75}
+.btn-vos:disabled{opacity:.4;cursor:not-allowed}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px;margin-bottom:1.5rem}
+.sc{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:.9rem;display:flex;flex-direction:column;gap:5px}
+.sl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)}
+.sv{font-family:var(--mo);font-size:21px;font-weight:500;color:var(--tx)}
+.sv.hi{color:var(--ac)}
+/* NETWORK PREVIEW */
+.net-preview{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.25rem 1.5rem;margin-top:1.25rem}
+.net-title{font-size:13px;font-weight:500;color:var(--tx2);margin-bottom:1rem}
+.net-items{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto}
+.ni{font-family:var(--mo);font-size:11px;padding:3px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:99px;color:var(--tx2);display:flex;gap:5px;align-items:center}
+.ni .nc{color:var(--ac)}
+.divider{height:1px;background:var(--bd);margin:2rem 0}
+/* FLOW */
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:580px){.flow{grid-template-columns:1fr}}
+.flow-step{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.25rem}
+.flow-n{font-family:var(--mo);font-size:11px;color:var(--ac);letter-spacing:.07em;margin-bottom:.6rem;display:block}
+.flow-step h3{font-size:14px;font-weight:500;margin-bottom:.4rem}
+.flow-step p{font-size:13px;color:var(--tx2);line-height:1.6}
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:7px}
+.fi{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.fi:hover{border-color:var(--bdh)}
+.fi summary{padding:.9rem 1.2rem;font-size:13px;font-weight:500;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.fi summary::-webkit-details-marker{display:none}
+.fi summary::after{content:'+';font-family:var(--mo);font-size:18px;color:var(--ac);transition:transform .2s;flex-shrink:0}
+.fi[open] summary::after{transform:rotate(45deg)}
+.fi p{padding:0 1.2rem .9rem;font-size:13px;color:var(--tx2);line-height:1.7;border-top:1px solid var(--bd);padding-top:.7rem}
+/* FOOTER */
+footer{border-top:1px solid var(--bd);padding:2rem 0;background:var(--bg2);text-align:center}
+footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(1rem);background:var(--ac);color:#04342C;font-size:13px;font-weight:500;padding:8px 20px;border-radius:99px;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:520px){.hero{padding:3rem 0 2rem}.nav-links{display:none}.drop-zone{padding:2.5rem 1.25rem}.results-header{flex-direction:column;align-items:flex-start}}
+/* VOS MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.modal{background:var(--bg2);border:1px solid var(--bdh);border-radius:var(--rl);max-width:480px;width:100%;padding:2rem}
+.modal h2{font-size:18px;font-weight:600;margin-bottom:1.2rem}
+.modal-steps{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem}
+.mstep{display:flex;gap:.75rem;align-items:flex-start}
+.mstep-n{font-family:var(--mo);font-size:11px;color:var(--ac);background:var(--acd);border-radius:99px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.mstep p{font-size:14px;color:var(--tx2);line-height:1.6}
+.mstep strong{color:var(--tx)}
+.modal-btns{display:flex;gap:9px;flex-wrap:wrap}
+@media(max-width:520px){.nav{display:none}.hero{padding:3rem 0 2rem}.hero-h1{font-size:1.75rem}}
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-inner">
+<header class="hdr">
+  <div class="hdr-in">
     <div class="logo">
-      <svg width="26" height="26" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-        <rect x="2" y="2" width="16" height="20" rx="2" stroke="#5DCAA5" stroke-width="1.5" fill="none"/>
-        <line x1="6" y1="8" x2="14" y2="8" stroke="#5DCAA5" stroke-width="1.5" stroke-linecap="round"/>
-        <line x1="6" y1="12" x2="14" y2="12" stroke="#5DCAA5" stroke-width="1.5" stroke-linecap="round"/>
-        <line x1="6" y1="16" x2="11" y2="16" stroke="#5DCAA5" stroke-width="1.5" stroke-linecap="round"/>
-        <circle cx="21" cy="21" r="5" stroke="#5DCAA5" stroke-width="1.5" fill="none"/>
-        <line x1="24.5" y1="24.5" x2="26.5" y2="26.5" stroke="#5DCAA5" stroke-width="1.5" stroke-linecap="round"/>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="13" height="16" rx="2" stroke="#5DCAA5" stroke-width="1.4" fill="none"/>
+        <line x1="5" y1="7" x2="11" y2="7" stroke="#5DCAA5" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="5" y1="10" x2="11" y2="10" stroke="#5DCAA5" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="5" y1="13" x2="8" y2="13" stroke="#5DCAA5" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="18" cy="18" r="4" stroke="#5DCAA5" stroke-width="1.4" fill="none"/>
+        <line x1="21" y1="21" x2="22.5" y2="22.5" stroke="#5DCAA5" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
-      <span class="logo-text">PDF<span class="accent">Words</span></span>
+      <span class="logo-tx">PDF<span class="ac">Words</span></span>
     </div>
-    <nav class="nav-links">
-      <a href="#how" class="nav-link">Como usar</a>
-      <a href="#faq" class="nav-link">FAQ</a>
+    <nav class="nav">
+      <a href="#params">Parâmetros</a>
+      <a href="#como">Como usar</a>
+      <a href="#faq">FAQ</a>
     </nav>
   </div>
 </header>
 
 <main>
   <section class="hero">
-    <div class="container">
-      <p class="hero-label">Análise de texto</p>
-      <h1 class="hero-title">Contagem de palavras<br>em arquivos PDF</h1>
-      <p class="hero-sub">Carregue um ou mais PDFs e obtenha estatísticas detalhadas instantaneamente. Processamento local — nenhum arquivo é enviado a servidores.</p>
+    <div class="wrap">
+      <p class="hero-lbl">Análise bibliométrica</p>
+      <h1 class="hero-h1">PDFs para rede de<br>co-ocorrência no VOSviewer</h1>
+      <p class="hero-sub">Carregue seus PDFs, extraia o texto, gere um arquivo JSON de rede de co-ocorrência de palavras e abra directamente no VOSviewer Online.</p>
+      <div class="hero-badges">
+        <span class="badge hi">VOSviewer JSON</span>
+        <span class="badge">Co-ocorrência de palavras</span>
+        <span class="badge">Stopwords PT + EN</span>
+        <span class="badge">100% local</span>
+      </div>
     </div>
   </section>
 
-  <section class="upload-section">
-    <div class="container">
-      <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="Área de upload de PDFs">
-        <input type="file" accept=".pdf" multiple id="file-input" aria-label="Seleccionar arquivos PDF"/>
-        <div class="drop-inner">
-          <div class="drop-icon-wrap">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-              <rect x="6" y="4" width="22" height="28" rx="3" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".4"/>
-              <line x1="11" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="11" y1="17" x2="23" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="11" y1="22" x2="18" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="29" cy="29" r="8" fill="#0F6E56"/>
-              <line x1="29" y1="25.5" x2="29" y2="32.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="25.5" y1="29" x2="32.5" y2="29" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- UPLOAD -->
+  <section class="sec">
+    <div class="wrap">
+      <p class="sec-title">1 — Carregar PDFs</p>
+      <div class="drop" id="drop" role="button" tabindex="0" aria-label="Área de upload de PDFs">
+        <input type="file" accept=".pdf" multiple id="finput" aria-label="Seleccionar PDFs"/>
+        <div class="drop-in">
+          <div class="drop-ico">
+            <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true">
+              <rect x="5" y="3" width="20" height="26" rx="3" stroke="currentColor" stroke-width="1.4" fill="none" opacity=".4"/>
+              <line x1="10" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="10" y1="15" x2="21" y2="15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="10" y1="20" x2="16" y2="20" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              <circle cx="28" cy="28" r="7.5" fill="#0F6E56"/>
+              <line x1="28" y1="24.5" x2="28" y2="31.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="24.5" y1="28" x2="31.5" y2="28" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
           </div>
-          <p class="drop-title">Arraste PDFs aqui</p>
-          <p class="drop-sub">ou <span class="drop-link">clique para seleccionar</span> — múltiplos arquivos suportados</p>
+          <p class="drop-h">Arraste PDFs aqui</p>
+          <p class="drop-s">ou <span class="drop-link">clique para seleccionar</span> — múltiplos arquivos suportados</p>
         </div>
       </div>
-      <div id="msg-area"></div>
-      <div id="files-list"></div>
+      <div id="msg"></div>
+      <div id="files"></div>
     </div>
   </section>
 
-  <section class="results-section" id="results" style="display:none;">
-    <div class="container">
-      <div class="results-header">
-        <h2 class="results-title">Estatísticas</h2>
-        <div class="results-actions">
-          <button class="btn-ghost" onclick="copyStats()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-            Copiar
-          </button>
-          <button class="btn-ghost" onclick="exportCSV()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 2v7M4 6.5L7 10l3-3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-            Exportar CSV
-          </button>
-          <button class="btn-ghost danger" onclick="clearAll()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 4h10M5 4V2h4v2M4.5 4l.5 8h4l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Limpar
-          </button>
+  <!-- PARAMS -->
+  <section class="sec" id="params">
+    <div class="wrap">
+      <p class="sec-title">2 — Parâmetros da rede</p>
+      <div class="params-grid">
+        <div class="param-card">
+          <span class="param-lbl">Frequência mínima</span>
+          <div class="param-row">
+            <input type="range" min="1" max="20" value="3" id="p-minfreq" step="1" oninput="document.getElementById('v-minfreq').textContent=this.value"/>
+            <span class="param-val" id="v-minfreq">3</span>
+          </div>
+          <p class="param-hint">Nº mínimo de ocorrências de uma palavra</p>
+        </div>
+        <div class="param-card">
+          <span class="param-lbl">Co-ocorrência mínima</span>
+          <div class="param-row">
+            <input type="range" min="1" max="15" value="2" id="p-mincooc" step="1" oninput="document.getElementById('v-mincooc').textContent=this.value"/>
+            <span class="param-val" id="v-mincooc">2</span>
+          </div>
+          <p class="param-hint">Força mínima de ligação entre dois termos</p>
+        </div>
+        <div class="param-card">
+          <span class="param-lbl">Máximo de palavras</span>
+          <div class="param-row">
+            <input type="range" min="20" max="300" value="100" id="p-maxw" step="10" oninput="document.getElementById('v-maxw').textContent=this.value"/>
+            <span class="param-val" id="v-maxw">100</span>
+          </div>
+          <p class="param-hint">Termos mais frequentes a incluir na rede</p>
+        </div>
+        <div class="param-card">
+          <span class="param-lbl">Comprimento mínimo</span>
+          <div class="param-row">
+            <input type="range" min="2" max="6" value="3" id="p-minlen" step="1" oninput="document.getElementById('v-minlen').textContent=this.value"/>
+            <span class="param-val" id="v-minlen">3</span>
+          </div>
+          <p class="param-hint">Número mínimo de caracteres por palavra</p>
         </div>
       </div>
-      <div class="stats-grid" id="stats-grid"></div>
-      <div class="divider"></div>
-      <div class="two-col">
-        <div>
-          <h3 class="sub-title">Por arquivo</h3>
-          <div id="per-file-table"></div>
-        </div>
-        <div>
-          <h3 class="sub-title">Palavras mais frequentes</h3>
-          <p class="sub-note">Top 20 — stopwords removidas</p>
-          <div class="top-words" id="top-words"></div>
-        </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-gen" onclick="generate()" disabled>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1v7M4.5 5.5L7.5 2.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10.5v2a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Gerar rede de co-ocorrência
+        </button>
+        <button class="btn btn-ghost" id="btn-clear" onclick="clearAll()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 4h10M5 4V2h4v2M4.5 4l.5 8h4l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Limpar
+        </button>
       </div>
     </div>
   </section>
 
-  <section class="how-section" id="how">
-    <div class="container">
-      <h2 class="section-title">Como usar</h2>
-      <div class="steps-grid">
-        <div class="step"><span class="step-num">01</span><h3>Carregue seus PDFs</h3><p>Arraste arquivos para a área de upload ou clique para seleccionar. Aceita múltiplos arquivos de uma vez.</p></div>
-        <div class="step"><span class="step-num">02</span><h3>Aguarde o processamento</h3><p>Cada arquivo é processado localmente no navegador. Nenhum dado é enviado para servidores externos.</p></div>
-        <div class="step"><span class="step-num">03</span><h3>Analise os resultados</h3><p>Veja estatísticas consolidadas, por arquivo e as palavras mais frequentes. Exporte como CSV se necessário.</p></div>
+  <!-- RESULTS -->
+  <div id="results" style="display:none">
+    <div class="divider"></div>
+    <section class="sec">
+      <div class="wrap">
+        <p class="sec-title">3 — Resultado</p>
+
+        <div class="stats-grid" id="sgrid"></div>
+
+        <div class="net-preview">
+          <p class="net-title">Termos na rede (por frequência)</p>
+          <div class="net-items" id="net-items"></div>
+        </div>
+
+        <div class="actions" style="margin-top:1.5rem">
+          <button class="btn btn-primary" onclick="downloadJSON()">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 2v8M4 7.5L7.5 11 11 7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Baixar JSON para VOSviewer
+          </button>
+          <button class="btn btn-vos" onclick="openVOS()">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M10 2h3v3M13 2l-5.5 5.5M6 3H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Abrir VOSviewer Online
+          </button>
+          <button class="btn btn-ghost" onclick="downloadCSV()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="11" height="11" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="1.5" y1="5" x2="12.5" y2="5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="5" x2="5" y2="12.5" stroke="currentColor" stroke-width="1.2"/></svg>
+            Exportar CSV de frequências
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- HOW -->
+  <section class="sec" id="como" style="border-top:1px solid var(--bd)">
+    <div class="wrap">
+      <p class="sec-title">Como usar</p>
+      <div class="flow">
+        <div class="flow-step"><span class="flow-n">01</span><h3>Carregue os PDFs</h3><p>Arraste ou seleccione um ou mais PDFs. O texto é extraído localmente, sem envio a servidores.</p></div>
+        <div class="flow-step"><span class="flow-n">02</span><h3>Ajuste os parâmetros</h3><p>Defina frequência mínima, co-ocorrência mínima e o número máximo de termos para controlar o tamanho da rede.</p></div>
+        <div class="flow-step"><span class="flow-n">03</span><h3>Abra no VOSviewer</h3><p>Baixe o JSON gerado e arraste para o VOSviewer Online. O mapa de co-ocorrência será visualizado imediatamente.</p></div>
       </div>
     </div>
   </section>
 
-  <section class="faq-section" id="faq">
-    <div class="container">
-      <h2 class="section-title">Perguntas frequentes</h2>
+  <!-- FAQ -->
+  <section class="sec" id="faq" style="border-top:1px solid var(--bd)">
+    <div class="wrap">
+      <p class="sec-title">Perguntas frequentes</p>
       <div class="faq-list">
-        <details class="faq-item"><summary>Meus arquivos são enviados para algum servidor?</summary><p>Não. Todo o processamento acontece localmente no seu navegador. Seus PDFs nunca saem do seu dispositivo.</p></details>
-        <details class="faq-item"><summary>PDFs digitalizados (imagens) são suportados?</summary><p>A ferramenta extrai texto de PDFs com camada de texto. PDFs compostos apenas por imagens escaneadas retornarão zero palavras.</p></details>
-        <details class="faq-item"><summary>Qual o limite de tamanho dos arquivos?</summary><p>Não há limite imposto pela ferramenta, mas arquivos acima de 100 MB podem demorar dependendo da memória do dispositivo.</p></details>
-        <details class="faq-item"><summary>O que são stopwords?</summary><p>Palavras muito comuns sem valor semântico relevante, como "de", "a", "que", "the", "and". São removidas da lista de frequentes para evidenciar os termos significativos.</p></details>
+        <details class="fi"><summary>O que é uma rede de co-ocorrência?</summary><p>É uma rede onde cada nó representa uma palavra e as ligações indicam que duas palavras aparecem juntas na mesma frase. Quanto mais vezes co-ocorrem, mais forte é a ligação. Esta é uma análise clássica em bibliometria e text mining.</p></details>
+        <details class="fi"><summary>Como usar o JSON no VOSviewer Online?</summary><p>Baixe o arquivo JSON gerado, acesse app.vosviewer.com, clique em "Open" no canto superior direito, seleccione "VOSviewer JSON file" e carregue o arquivo.</p></details>
+        <details class="fi"><summary>PDFs digitalizados (scanned) funcionam?</summary><p>Não directamente. PDFs compostos apenas por imagens precisam de OCR primeiro. A ferramenta extrai texto apenas de PDFs com camada de texto (born-digital ou com OCR já aplicado).</p></details>
+        <details class="fi"><summary>Quais stopwords são removidas?</summary><p>Palavras funcionais em português (de, a, que, para, com, etc.) e inglês (the, and, for, of, in, etc.) são removidas automaticamente. Isso garante que apenas termos com conteúdo semântico apareçam na rede.</p></details>
+        <details class="fi"><summary>A rede não gerou links — o que fazer?</summary><p>Tente reduzir os parâmetros de frequência mínima e co-ocorrência mínima. Para textos curtos, valores de 1 ou 2 já são suficientes. Também vale aumentar o número máximo de palavras.</p></details>
       </div>
     </div>
   </section>
 </main>
 
-<footer class="footer">
-  <div class="container footer-inner">
-    <span class="logo-text small">PDF<span class="accent">Words</span></span>
-    <p>Processamento 100% local &middot; Nenhum dado é armazenado</p>
+<footer>
+  <div class="wrap">
+    <span class="logo-tx">PDF<span class="ac">Words</span></span>
+    <p>Processamento 100% local &middot; Nenhum dado é armazenado &middot; VOSviewer JSON compatível</p>
   </div>
 </footer>
+
+<!-- MODAL -->
+<div id="modal" class="modal-bg" style="display:none" onclick="closeModal(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 id="modal-title">Abrir no VOSviewer Online</h2>
+    <div class="modal-steps">
+      <div class="mstep"><span class="mstep-n">1</span><p><strong>Baixe o arquivo JSON</strong> clicando em "Baixar JSON para VOSviewer" (se ainda não o fez).</p></div>
+      <div class="mstep"><span class="mstep-n">2</span><p>O VOSviewer Online irá <strong>abrir numa nova aba</strong> agora.</p></div>
+      <div class="mstep"><span class="mstep-n">3</span><p>No VOSviewer, clique em <strong>"Open"</strong> (canto superior direito) → <strong>"VOSviewer JSON file"</strong> → seleccione o arquivo baixado.</p></div>
+    </div>
+    <div class="modal-btns">
+      <a class="btn btn-vos" href="https://app.vosviewer.com" target="_blank" rel="noopener" onclick="closeModalDirect()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M10 2h3v3M13 2l-5.5 5.5M6 3H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Abrir VOSviewer Online
+      </a>
+      <button class="btn btn-ghost" onclick="closeModalDirect()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-const SW=new Set(['a','à','ao','aos','as','às','com','da','das','de','do','dos','e','em','entre','era','esse','esta','este','eu','foi','há','isso','isto','já','lhe','lhes','mais','mas','me','mesmo','meu','minha','muito','na','nas','nem','no','nos','nós','nossa','nosso','nossas','nossos','num','numa','o','os','ou','para','pela','pelas','pelo','pelos','por','qual','quando','que','quem','se','sem','ser','seu','seus','sua','suas','também','te','tem','tendo','ter','tu','tua','tuas','tudo','teu','teus','um','uma','uns','umas','você','vocês','vos','vossa','vossas','vosso','vossos','the','and','for','of','in','is','it','was','on','at','be','by','an','as','or','from','that','are','were','has','have','not','but','its','this','they','can','will','about','which','when','who','how','all','with','their','there','been','would','could','should','into','then','than','each','also','may','other','after','first','she','he','his','her','our','your','my','we','us','if','up','out','so']);
+
+const SW=new Set(['a','à','ao','aos','as','às','com','da','das','de','do','dos','e','em','entre','era','esse','esta','este','eu','foi','há','isso','isto','já','lhe','lhes','mais','mas','me','mesmo','meu','minha','muito','na','nas','nem','no','nos','nós','nossa','nosso','nossas','nossos','num','numa','o','os','ou','para','pela','pelas','pelo','pelos','por','qual','quando','que','quem','se','sem','ser','seu','seus','sua','suas','também','te','tem','tendo','ter','tu','tua','tuas','tudo','teu','teus','um','uma','uns','umas','você','vocês','vos','vossa','vossas','vosso','vossos','the','and','for','of','in','is','it','was','on','at','be','by','an','as','or','from','that','are','were','has','have','not','but','its','this','they','can','will','about','which','when','who','how','all','with','their','there','been','would','could','should','into','then','than','each','also','may','other','after','first','she','he','his','her','our','your','my','we','us','if','up','out','so','do','did','been','its','than','these','those','some','such','no','nor','too','very','just','because','while','although','however','therefore','thus','hence','since','whether','though','yet','still','between','through','during','before','after','above','below','from','down','out','over','under','again','further','then','once','both','few','more','most','other','some','such']);
+
 let files=[];
-function tok(t){return(t.match(/\b[a-zA-ZÀ-ÿ\u00C0-\u024F]{2,}\b/g)||[])}
+let netData=null;
+
+function tok(t,minLen){return(t.match(/\b[a-zA-ZÀ-ÿ\u00C0-\u024F]+\b/g)||[]).filter(w=>w.length>=minLen)}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function cSent(t){return(t.match(/[^.!?…]+[.!?…]+/g)||[]).length||1}
-function cPara(t){return t.split(/\n\s*\n/).filter(p=>p.trim().length>10).length||1}
-function topWords(t,n=20){const f={};tok(t).forEach(w=>{const lw=w.toLowerCase();if(lw.length>2&&!SW.has(lw))f[lw]=(f[lw]||0)+1});return Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,n)}
+
 function renderFiles(){
-  const l=document.getElementById('files-list');
+  const l=document.getElementById('files');
   if(!files.length){l.innerHTML='';return}
-  l.innerHTML=files.map((f,i)=>`<div class="file-row"><svg class="file-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2" fill="none"/><line x1="5" y1="6" x2="9" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="9" x2="9" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="12" x2="7.5" y2="12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="file-name" title="${esc(f.name)}">${esc(f.name)}</span><span class="file-words">${f.done?f.wc.toLocaleString('pt-BR')+' palavras':f.err?'Erro':'...'}</span><div class="prog-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${f.p}%"></div></div></div><button class="file-remove" onclick="rm(${i})" title="Remover">&times;</button></div>`).join('')
+  l.innerHTML=files.map((f,i)=>`<div class="frow"><svg style="color:var(--ac);flex-shrink:0" width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true"><rect x="2" y="1" width="9" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2" fill="none"/><line x1="4.5" y1="5" x2="8.5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="8" x2="8.5" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="11" x2="7" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="fn" title="${esc(f.name)}">${esc(f.name)}</span><span class="fw">${f.done?f.wc.toLocaleString('pt-BR')+' palavras':f.err?'Erro':'...'}</span><div class="pb"><div class="pbar"><div class="pfill" style="width:${f.p}%"></div></div></div><button class="frm" onclick="rmFile(${i})" title="Remover">&times;</button></div>`).join('')
 }
-function showResults(){
-  const sec=document.getElementById('results');
-  const done=files.filter(f=>f.done);
-  if(!done.length){sec.style.display='none';return}
-  const allT=done.map(f=>f.text).join(' ');
-  const words=tok(allT);
-  const chars=allT.replace(/\s+/g,'').length;
-  const sent=cSent(allT),para=cPara(allT);
-  const uniq=new Set(words.map(w=>w.toLowerCase())).size;
-  const avg=words.length?Math.round(words.length/sent):0;
-  const avgL=words.length?(words.reduce((s,w)=>s+w.length,0)/words.length).toFixed(1):0;
-  document.getElementById('stats-grid').innerHTML=[['Palavras',words.length.toLocaleString('pt-BR'),true],['Únicas',uniq.toLocaleString('pt-BR'),false],['Caracteres',chars.toLocaleString('pt-BR'),false],['Sentenças',sent.toLocaleString('pt-BR'),false],['Parágrafos',para.toLocaleString('pt-BR'),false],['Méd. palavras/frase',avg,false],['Tam. médio',avgL+' letras',false],['Arquivos',done.length,false]].map(([l,v,a])=>`<div class="stat-card"><span class="stat-label">${l}</span><span class="stat-value${a?' accent':''}">${v}</span></div>`).join('');
-  document.getElementById('per-file-table').innerHTML='<div class="per-file-table">'+done.map(f=>`<div class="per-file-row"><span class="per-file-name" title="${esc(f.name)}">${esc(f.name)}</span><span class="per-file-count">${f.wc.toLocaleString('pt-BR')} words</span></div>`).join('')+'</div>';
-  document.getElementById('top-words').innerHTML=topWords(allT,20).map(([w,c])=>`<span class="word-badge">${esc(w)}<span class="wcount">${c}</span></span>`).join('');
-  sec.style.display='block';
-  sec.scrollIntoView({behavior:'smooth',block:'start'});
+
+function checkGenBtn(){
+  document.getElementById('btn-gen').disabled=!files.some(f=>f.done);
 }
-function rm(i){files.splice(i,1);renderFiles();showResults()}
-function clearAll(){files=[];renderFiles();document.getElementById('results').style.display='none';document.getElementById('msg-area').innerHTML=''}
+
+function rmFile(i){files.splice(i,1);renderFiles();checkGenBtn();netData=null;document.getElementById('results').style.display='none'}
+function clearAll(){files=[];renderFiles();checkGenBtn();netData=null;document.getElementById('results').style.display='none';document.getElementById('msg').innerHTML=''}
+
 async function processFile(file,idx){
   try{
     const ab=await file.arrayBuffer();
@@ -262,47 +362,113 @@ async function processFile(file,idx){
       const pg=await pdf.getPage(p);
       const ct=await pg.getTextContent();
       text+=ct.items.map(i=>i.str).join(' ')+'\n';
-      files[idx].p=Math.round(p/pdf.numPages*100);
-      renderFiles();
+      files[idx].p=Math.round(p/pdf.numPages*100);renderFiles();
     }
-    files[idx].text=text;files[idx].wc=tok(text).length;files[idx].done=true;files[idx].p=100;
-    renderFiles();showResults();
-  }catch(e){files[idx].err=true;files[idx].p=0;renderFiles();showMsg('Erro: '+e.message)}
+    files[idx].text=text;
+    files[idx].wc=tok(text,2).length;
+    files[idx].done=true;files[idx].p=100;
+    renderFiles();checkGenBtn();
+  }catch(e){files[idx].err=true;files[idx].p=0;renderFiles();showMsg('Erro ao processar "'+file.name+'": '+e.message)}
 }
-function handleFiles(newFiles){
-  const pdfs=newFiles.filter(f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'));
+
+function handleFiles(nf){
+  const pdfs=nf.filter(f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'));
   if(!pdfs.length){showMsg('Apenas arquivos PDF são suportados.');return}
   pdfs.forEach(file=>{
-    if(files.some(f=>f.name===file.name&&f.size===file.size)){showMsg('"'+file.name+'" já está na lista.');return}
+    if(files.some(f=>f.name===file.name&&f.size===file.size)){showMsg('"'+file.name+'" já foi adicionado.');return}
     const idx=files.length;
     files.push({name:file.name,size:file.size,text:'',wc:0,p:0,done:false,err:false});
     renderFiles();processFile(file,idx);
   });
 }
-function showMsg(t){const a=document.getElementById('msg-area');a.innerHTML=`<p class="error-msg">${esc(t)}</p>`;setTimeout(()=>a.innerHTML='',4000)}
-function copyStats(){
-  const done=files.filter(f=>f.done);if(!done.length)return;
-  const allT=done.map(f=>f.text).join(' ');const words=tok(allT);
-  let out='PDF Word Counter\n'+'='.repeat(28)+'\n\nPalavras: '+words.length.toLocaleString('pt-BR')+'\nÚnicas: '+new Set(words.map(w=>w.toLowerCase())).size.toLocaleString('pt-BR')+'\nSentenças: '+cSent(allT)+'\nParágrafos: '+cPara(allT)+'\n\nPor arquivo:\n';
-  done.forEach(f=>out+='  '+f.name+': '+f.wc.toLocaleString('pt-BR')+' palavras\n');
-  out+='\nTop palavras:\n';topWords(allT,20).forEach(([w,c])=>out+='  '+w+': '+c+'\n');
-  navigator.clipboard.writeText(out).then(()=>toast('Copiado!'));
+
+function showMsg(t){const a=document.getElementById('msg');a.innerHTML=`<p class="err">${esc(t)}</p>`;setTimeout(()=>a.innerHTML='',5000)}
+
+function generate(){
+  const done=files.filter(f=>f.done);
+  if(!done.length){showMsg('Carregue pelo menos um PDF primeiro.');return}
+  const allText=done.map(f=>f.text).join('\n');
+  const minFreq=parseInt(document.getElementById('p-minfreq').value);
+  const minCooc=parseInt(document.getElementById('p-mincooc').value);
+  const maxW=parseInt(document.getElementById('p-maxw').value);
+  const minLen=parseInt(document.getElementById('p-minlen').value);
+  netData=buildNetwork(allText,minFreq,minCooc,maxW,minLen);
+  renderResults(netData,allText,done.length);
 }
-function exportCSV(){
-  const done=files.filter(f=>f.done);if(!done.length)return;
-  const allT=done.map(f=>f.text).join(' ');
-  let csv='Arquivo,Palavras\n';done.forEach(f=>csv+='"'+f.name.replace(/"/g,'""')+'",'+f.wc+'\n');
-  csv+='"TOTAL",'+tok(allT).length+'\n\nPalavra,Frequência\n';
-  topWords(allT,50).forEach(([w,c])=>csv+='"'+w+'",'+c+'\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='pdf-wordcount.csv';a.click();toast('CSV exportado');
+
+function buildNetwork(text,minFreq,minCooc,maxW,minLen){
+  const sentences=text.split(/[.!?\n]+/).filter(s=>s.trim().length>5);
+  const freq={};
+  sentences.forEach(sent=>{
+    const ws=new Set(tok(sent,minLen).map(w=>w.toLowerCase()).filter(w=>!SW.has(w)));
+    ws.forEach(w=>freq[w]=(freq[w]||0)+1);
+  });
+  const vocab=Object.entries(freq).filter(([,c])=>c>=minFreq).sort((a,b)=>b[1]-a[1]).slice(0,maxW).map(([w])=>w);
+  const vset=new Set(vocab);
+  const wid={};vocab.forEach((w,i)=>wid[w]=i+1);
+  const cooc={};
+  sentences.forEach(sent=>{
+    const ws=[...new Set(tok(sent,minLen).map(w=>w.toLowerCase()).filter(w=>vset.has(w)))];
+    for(let i=0;i<ws.length;i++)for(let j=i+1;j<ws.length;j++){
+      const a=wid[ws[i]],b=wid[ws[j]];
+      const k=a<b?`${a}-${b}`:`${b}-${a}`;
+      cooc[k]=(cooc[k]||0)+1;
+    }
+  });
+  const items=vocab.map((w,i)=>({id:i+1,label:w,weights:{Occurrences:freq[w]}}));
+  const links=Object.entries(cooc).filter(([,v])=>v>=minCooc).map(([k,v])=>{const[s,t]=k.split('-').map(Number);return{source_id:s,target_id:t,strength:v}});
+  return{network:{items,links}};
 }
-function toast(msg){let t=document.querySelector('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
-document.getElementById('file-input').addEventListener('change',function(e){handleFiles(Array.from(e.target.files));this.value=''});
-const dz=document.getElementById('drop-zone');
+
+function renderResults(nd,allText,nDocs){
+  const words=tok(allText,2).length;
+  const sents=allText.split(/[.!?\n]+/).filter(s=>s.trim().length>5).length;
+  const items=nd.network.items;
+  const links=nd.network.links;
+  document.getElementById('sgrid').innerHTML=[
+    ['Termos na rede',items.length,true],
+    ['Ligações',links.length,false],
+    ['Total palavras',words.toLocaleString('pt-BR'),false],
+    ['Sentenças',sents.toLocaleString('pt-BR'),false],
+    ['Arquivos',nDocs,false],
+  ].map(([l,v,h])=>`<div class="sc"><span class="sl">${l}</span><span class="sv${h?' hi':''}">${v}</span></div>`).join('');
+  document.getElementById('net-items').innerHTML=items.slice(0,80).map(it=>`<span class="ni">${esc(it.label)}<span class="nc">${it.weights.Occurrences}</span></span>`).join('');
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function downloadJSON(){
+  if(!netData)return;
+  const blob=new Blob([JSON.stringify(netData,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='vosviewer-network.json';a.click();URL.revokeObjectURL(a.href);
+  toast('JSON baixado');
+}
+
+function downloadCSV(){
+  if(!netData)return;
+  let csv='Termo,Frequência\n';
+  netData.network.items.forEach(it=>csv+=`"${it.label}",${it.weights.Occurrences}\n`);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='word-frequencies.csv';a.click();URL.revokeObjectURL(a.href);
+  toast('CSV exportado');
+}
+
+function openVOS(){
+  if(!netData){showMsg('Gere a rede primeiro.');return}
+  downloadJSON();
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(e){if(e.target===document.getElementById('modal'))closeModalDirect()}
+function closeModalDirect(){document.getElementById('modal').style.display='none'}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+document.getElementById('finput').addEventListener('change',function(e){handleFiles(Array.from(e.target.files));this.value=''});
+const dz=document.getElementById('drop');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
 dz.addEventListener('dragleave',e=>{if(!dz.contains(e.relatedTarget))dz.classList.remove('over')});
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');handleFiles(Array.from(e.dataTransfer.files))});
-dz.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('file-input').click()}});
+dz.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('finput').click()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect()});
 </script>
 </body>
 </html>
