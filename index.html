@@ -111,6 +111,16 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
 /* TOAST */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(1rem);background:var(--ac);color:#04342C;font-size:13px;font-weight:500;padding:8px 20px;border-radius:99px;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.custom-sw-block{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:1rem;margin-top:12px}
+.sw-input-row{margin:.5rem 0 .6rem}
+.sw-input-row input{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:8px 12px;font-family:var(--fn);font-size:13px;color:var(--tx);outline:none;transition:border-color .2s}
+.sw-input-row input:focus{border-color:var(--ac)}
+.sw-input-row input::placeholder{color:var(--tx3)}
+.sw-tags{display:flex;flex-wrap:wrap;gap:6px;min-height:4px}
+.sw-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mo);font-size:11px;padding:3px 8px 3px 10px;background:rgba(240,153,123,.1);border:1px solid rgba(240,153,123,.25);border-radius:99px;color:var(--dg)}
+.sw-tag button{background:none;border:none;color:var(--dg);cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:.7}
+.sw-tag button:hover{opacity:1}
 /* VOS MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:1.5rem}
 .modal{background:var(--bg2);border:1px solid var(--bdh);border-radius:var(--rl);max-width:480px;width:100%;padding:2rem}
@@ -228,6 +238,15 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
         </div>
       </div>
 
+      <div class="custom-sw-block">
+        <span class="param-lbl">Palavras a excluir (stopwords personalizadas)</span>
+        <div class="sw-input-row">
+          <input type="text" id="sw-input" placeholder="Digite uma palavra e pressione Enter ou vírgula..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+        </div>
+        <div class="sw-tags" id="sw-tags"></div>
+        <p class="param-hint" style="margin-top:.5rem">Ex.: não, como, etc, sendo, assim — palavras que não devem aparecer na rede</p>
+      </div>
+
       <div class="actions">
         <button class="btn btn-primary" id="btn-gen" onclick="generate()" disabled>
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1v7M4.5 5.5L7.5 2.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10.5v2a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -333,6 +352,26 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+let customSW = new Set();
+
+function renderTags() {
+  const c = document.getElementById('sw-tags');
+  c.innerHTML = [...customSW].map(w =>
+    `<span class="sw-tag">${w}<button onclick="removeTag('${w}')" title="Remover">&times;</button></span>`
+  ).join('');
+}
+
+function addTag(raw) {
+  const words = raw.split(/[,;\s]+/).map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
+  words.forEach(w => customSW.add(w));
+  renderTags();
+}
+
+function removeTag(w) {
+  customSW.delete(w);
+  renderTags();
+}
+
 const SW=new Set(['a','à','ao','aos','as','às','com','da','das','de','do','dos','e','em','entre','era','esse','esta','este','eu','foi','há','isso','isto','já','lhe','lhes','mais','mas','me','mesmo','meu','minha','muito','na','nas','nem','no','nos','nós','nossa','nosso','nossas','nossos','num','numa','o','os','ou','para','pela','pelas','pelo','pelos','por','qual','quando','que','quem','se','sem','ser','seu','seus','sua','suas','também','te','tem','tendo','ter','tu','tua','tuas','tudo','teu','teus','um','uma','uns','umas','você','vocês','vos','vossa','vossas','vosso','vossos','the','and','for','of','in','is','it','was','on','at','be','by','an','as','or','from','that','are','were','has','have','not','but','its','this','they','can','will','about','which','when','who','how','all','with','their','there','been','would','could','should','into','then','than','each','also','may','other','after','first','she','he','his','her','our','your','my','we','us','if','up','out','so','do','did','been','its','than','these','those','some','such','no','nor','too','very','just','because','while','although','however','therefore','thus','hence','since','whether','though','yet','still','between','through','during','before','after','above','below','from','down','out','over','under','again','further','then','once','both','few','more','most','other','some','such']);
 
 let files=[];
@@ -401,7 +440,7 @@ function buildNetwork(text,minFreq,minCooc,maxW,minLen){
   const sentences=text.split(/[.!?\n]+/).filter(s=>s.trim().length>5);
   const freq={};
   sentences.forEach(sent=>{
-    const ws=new Set(tok(sent,minLen).map(w=>w.toLowerCase()).filter(w=>!SW.has(w)));
+    const ws=new Set(tok(sent,minLen).map(w=>w.toLowerCase()).filter(w=>!SW.has(w)&&!customSW.has(w)));
     ws.forEach(w=>freq[w]=(freq[w]||0)+1);
   });
   const vocab=Object.entries(freq).filter(([,c])=>c>=minFreq).sort((a,b)=>b[1]-a[1]).slice(0,maxW).map(([w])=>w);
@@ -470,6 +509,17 @@ dz.addEventListener('dragleave',e=>{if(!dz.contains(e.relatedTarget))dz.classLis
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');handleFiles(Array.from(e.dataTransfer.files))});
 dz.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('finput').click()}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect()});
+document.getElementById('sw-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = this.value.trim().replace(/,$/,'');
+    if (val) { addTag(val); this.value = ''; }
+  }
+});
+document.getElementById('sw-input').addEventListener('blur', function() {
+  const val = this.value.trim().replace(/,$/,'');
+  if (val) { addTag(val); this.value = ''; }
+});
 </script>
 </body>
 </html>
