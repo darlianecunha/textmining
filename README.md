@@ -75,11 +75,7 @@ Todo o processamento ocorre no navegador do usuário. Nenhum arquivo ou dado é 
 ## Autora
 
 **Darliane Ribeiro Cunha, PhD**
-Professora Titular — Universidade Federal do Maranhão (UFMA)
 Pesquisadora em governança de sustentabilidade, analytics ambiental e ODS
-
-- [SDG Research Hub](https://sdgports.manus.space)
-- [BluePort AI](https://blueportai.manus.space)
 
 ---
 
