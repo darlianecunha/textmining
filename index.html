@@ -121,6 +121,17 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
 .sw-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mo);font-size:11px;padding:3px 8px 3px 10px;background:rgba(240,153,123,.1);border:1px solid rgba(240,153,123,.25);border-radius:99px;color:var(--dg)}
 .sw-tag button{background:none;border:none;color:var(--dg);cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:.7}
 .sw-tag button:hover{opacity:1}
+.sw-divider{display:flex;align-items:center;gap:8px;margin:.75rem 0 .6rem}
+.sw-divider span{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.sw-divider::before,.sw-divider::after{content:'';flex:1;height:1px;background:var(--bd)}
+.sw-block-row{display:flex;gap:8px;align-items:flex-start}
+.sw-block-row textarea{flex:1;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:8px 12px;font-family:var(--mo);font-size:11px;color:var(--tx);outline:none;transition:border-color .2s;resize:vertical;min-height:80px;line-height:1.6}
+.sw-block-row textarea:focus{border-color:var(--ac)}
+.sw-block-row textarea::placeholder{color:var(--tx3);font-family:var(--fn)}
+.btn-add-block{flex-shrink:0;background:var(--bg2);color:var(--tx2);border:1px solid var(--bd);border-radius:var(--r);padding:8px 14px;font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-add-block:hover{border-color:var(--ac);color:var(--ac)}
+.sw-clear-all{font-size:11px;color:var(--tx3);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;margin-top:.4rem;display:inline-block}
+.sw-clear-all:hover{color:var(--dg)}
 /* VOS MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:1.5rem}
 .modal{background:var(--bg2);border:1px solid var(--bdh);border-radius:var(--rl);max-width:480px;width:100%;padding:2rem}
@@ -244,7 +255,25 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
           <input type="text" id="sw-input" placeholder="Digite uma palavra e pressione Enter ou vírgula..." autocomplete="off" autocorrect="off" spellcheck="false"/>
         </div>
         <div class="sw-tags" id="sw-tags"></div>
-        <p class="param-hint" style="margin-top:.5rem">Ex.: não, como, etc, sendo, assim — palavras que não devem aparecer na rede</p>
+        <p class="param-hint" style="margin-top:.5rem">Digite e pressione Enter, ou cole separado por vírgula, ponto-e-vírgula ou espaço</p>
+
+        <div class="sw-divider"><span>ou cole um bloco</span></div>
+
+        <div class="sw-block-row">
+          <textarea id="sw-block" placeholder="Cole aqui uma lista de palavras&#10;uma por linha, ou separadas por vírgula:&#10;&#10;não&#10;como&#10;sendo&#10;assim&#10;etc" rows="5"></textarea>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn-add-block" onclick="importBlock()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:4px" aria-hidden="true"><path d="M6.5 1v8M3.5 6l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M1.5 11h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Importar
+            </button>
+            <button class="btn-add-block" onclick="clearBlockArea()" style="font-size:11px;padding:6px 14px">Limpar área</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.6rem">
+          <span id="sw-count" style="font-family:var(--mo);font-size:11px;color:var(--tx3)"></span>
+          <button class="sw-clear-all" onclick="clearAllTags()" id="sw-clear-btn" style="display:none">Remover todas</button>
+        </div>
       </div>
 
       <div class="actions">
@@ -359,6 +388,28 @@ function renderTags() {
   c.innerHTML = [...customSW].map(w =>
     `<span class="sw-tag">${w}<button onclick="removeTag('${w}')" title="Remover">&times;</button></span>`
   ).join('');
+  const cnt = document.getElementById('sw-count');
+  const btn = document.getElementById('sw-clear-btn');
+  if (cnt) cnt.textContent = customSW.size > 0 ? customSW.size + ' palavra' + (customSW.size > 1 ? 's' : '') + ' excluída' + (customSW.size > 1 ? 's' : '') : '';
+  if (btn) btn.style.display = customSW.size > 0 ? 'inline-block' : 'none';
+}
+
+function importBlock() {
+  const ta = document.getElementById('sw-block');
+  if (!ta || !ta.value.trim()) return;
+  addTag(ta.value);
+  ta.value = '';
+  toast('Palavras importadas');
+}
+
+function clearBlockArea() {
+  const ta = document.getElementById('sw-block');
+  if (ta) ta.value = '';
+}
+
+function clearAllTags() {
+  customSW.clear();
+  renderTags();
 }
 
 function addTag(raw) {
