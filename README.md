@@ -2,6 +2,8 @@
 
 **Ferramenta de análise bibliométrica e text mining que transforma PDFs em redes de co-ocorrência de palavras compatíveis com o VOSviewer.**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20708534.svg)](https://doi.org/10.5281/zenodo.20708534)
+
 🔗 **Demo ao vivo:** [text-umber-delta.vercel.app](https://text-umber-delta.vercel.app)
 
 ---
@@ -57,18 +59,15 @@ O PDFWords permite carregar um ou mais arquivos PDF, extrair o texto localmente 
 
 ---
 
-## Estrutura do repositório
-
-```
-text/
-└── index.html    # Aplicação completa (single-file)
-```
-
----
-
 ## Privacidade
 
 Todo o processamento ocorre no navegador do usuário. Nenhum arquivo ou dado é enviado a servidores externos.
+
+---
+
+## Como citar
+
+> Cunha, D. R. (2026). PDFWords: bibliometric text-mining for VOSviewer co-occurrence networks (v0.1.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.20708534
 
 ---
 
@@ -76,6 +75,7 @@ Todo o processamento ocorre no navegador do usuário. Nenhum arquivo ou dado é 
 
 **Darliane Ribeiro Cunha, PhD**
 Pesquisadora em governança de sustentabilidade, analytics ambiental e ODS
+[ORCID: 0000-0003-2548-1237](https://orcid.org/0000-0003-2548-1237)
 
 ---
 
