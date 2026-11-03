@@ -221,7 +221,7 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
             <input type="range" min="1" max="20" value="3" id="p-minfreq" step="1" oninput="document.getElementById('v-minfreq').textContent=this.value"/>
             <span class="param-val" id="v-minfreq">3</span>
           </div>
-          <p class="param-hint">Minimum number of occurrences of a word</p>
+          <p class="param-hint">Minimum number of occurrences of a term (full count)</p>
         </div>
         <div class="param-card">
           <span class="param-lbl">Minimum co-occurrence</span>
@@ -246,6 +246,16 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
             <span class="param-val" id="v-minlen">3</span>
           </div>
           <p class="param-hint">Minimum number of characters per word</p>
+        </div>
+      </div>
+
+      <div class="custom-sw-block" style="margin-bottom:1rem">
+        <span class="param-lbl">Text cleaning</span>
+        <div style="display:grid;gap:.45rem;margin-top:.5rem;font-size:13px">
+          <label><input type="checkbox" id="o-refs" checked/> Remove reference list (after "References" / "Referências")</label>
+          <label><input type="checkbox" id="o-headers" checked/> Remove running headers and footers (lines repeated on most pages)</label>
+          <label><input type="checkbox" id="o-acad" checked/> Remove generic academic terms (et al., doi, fig., table, journal, licence...)</label>
+          <label><input type="checkbox" id="o-plural"/> Merge simple English plurals (ports &rarr; port, emissions &rarr; emission)</label>
         </div>
       </div>
 
@@ -341,7 +351,7 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
         <details class="fi"><summary>What is a co-occurrence network?</summary><p>It is a network where each node represents a word and the links indicate that two words appear together in the same sentence. The more often they co-occur, the stronger the link. This is a classic analysis in bibliometrics and text mining.</p></details>
         <details class="fi"><summary>How do I use the JSON in VOSviewer Online?</summary><p>Download the generated JSON file, go to app.vosviewer.com, click "Open" in the top right, select "VOSviewer JSON file" and load the file.</p></details>
         <details class="fi"><summary>Do scanned PDFs work?</summary><p>Not directly. PDFs made up of images only need OCR first. The tool extracts text only from PDFs with a text layer (born-digital or with OCR already applied).</p></details>
-        <details class="fi"><summary>Which stopwords are removed?</summary><p>Function words in Portuguese (de, a, que, para, com, etc.) and English (the, and, for, of, in, etc.) are removed automatically. This ensures that only terms with semantic content appear in the network.</p></details>
+        <details class="fi"><summary>Which stopwords are removed?</summary><p>English function words (the, and, for, of, which, however, etc.) are removed automatically, as are Portuguese ones (de, que, não, são, etc.). Generic academic terms (et al., doi, fig., table, journal) can also be removed with the option under Text cleaning, and you can add your own words to exclude.</p></details>
         <details class="fi"><summary>The network produced no links — what now?</summary><p>Try reducing the minimum frequency and minimum co-occurrence parameters. For short texts, values of 1 or 2 are usually enough. Increasing the maximum number of words also helps.</p></details>
       </div>
     </div>
@@ -381,85 +391,69 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let customSW = new Set();
+// ---------- Text normalisation & tokenisation (Unicode-aware) ----------
+const TOKEN_RE=/\p{L}[\p{L}\p{M}\p{N}]*/gu;
+function tok(t,minLen){return(t.match(TOKEN_RE)||[]).filter(w=>w.length>=minLen)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
-function renderTags() {
-  const c = document.getElementById('sw-tags');
-  c.innerHTML = [...customSW].map(w =>
-    `<span class="sw-tag">${w}<button onclick="removeTag('${w}')" title="Remover">&times;</button></span>`
-  ).join('');
-  const cnt = document.getElementById('sw-count');
-  const btn = document.getElementById('sw-clear-btn');
-  if (cnt) cnt.textContent = customSW.size > 0 ? customSW.size + ' word' + (customSW.size > 1 ? 's' : '') + ' excluded' : '';
-  if (btn) btn.style.display = customSW.size > 0 ? 'inline-block' : 'none';
+// ---------- Stopwords ----------
+const SW_EN='a about above across after afterwards again against all almost alone along already also although always am among amongst an and another any anyhow anyone anything anyway anywhere are around as at be became because become becomes becoming been before beforehand behind being below beside besides between beyond both but by can cannot could did do does doing done down due during each either else elsewhere enough even ever every everyone everything everywhere except few for former formerly from further furthermore had has have having he hence her here hereafter hereby herein hers herself him himself his how however i if in indeed into is it its itself just last latter latterly least less made make makes many may me meanwhile might mine more moreover most mostly much must my myself namely neither never nevertheless next no nobody none nor not nothing now nowhere of off often on once one only onto or other others otherwise our ours ourselves out over own per perhaps rather same seem seemed seeming seems several she should since so some somehow someone something sometime sometimes somewhere still such than that the their theirs them themselves then thence there thereafter thereby therefore therein thereupon these they this those though through throughout thru thus to together too toward towards under unless until up upon us very via was we well were what whatever when whence whenever where whereafter whereas whereby wherein whereupon wherever whether which while whither who whoever whole whom whose why will with within without would yet you your yours yourself yourselves also can could may might shall will would one two three four five first second third new within using used use uses based thus hence like within whereas see shown show shows given';
+const SW_PT='a à ao aos aquela aquelas aquele aqueles aquilo as às até com como contra cada da das de dela delas dele deles depois desde do dos e é ela elas ele eles em entre era eram essa essas esse esses esta está estão estas este estes estava eu foi foram há isso isto já lhe lhes mais mas me mesma mesmo meu minha muito muitos na não nas nem no nos nós nossa nosso num numa o os ou onde para pela pelas pelo pelos pode podem por porque qual quais quando que quem se sem ser será seu seus sido sob sobre sua suas são também tem têm tendo ter teu tua tudo um uma umas uns você vocês assim ainda apenas bem cujo cuja deve devem dessa desse desta deste dois duas estar forma meio outra outras outro outros parte seja sejam sendo ser sua tanto todo todos toda todas três vez vezes via';
+const SW_ACAD='et al etc doi https http www org com pdf vol pp eds ed fig figs table tables figure figures eq eqs cf ie eg vs viz ibid op cit journal elsevier springer wiley taylor francis copyright rights reserved author authors corresponding email received accepted available online article press university licence license creative commons retrieved accessed abstract keywords introduction conclusion conclusions section sections paper study studies';
+const SW=new Set(SW_EN.split(/\s+/).concat(SW_PT.split(/\s+/)));
+const SW_ACADEMIC=new Set(SW_ACAD.split(/\s+/));
+
+let customSW=new Set();
+function renderTags(){
+  const c=document.getElementById('sw-tags');
+  c.innerHTML=[...customSW].map(w=>`<span class="sw-tag">${esc(w)}<button data-w="${esc(w)}" onclick="removeTag(this.dataset.w)" title="Remove">&times;</button></span>`).join('');
+  const cnt=document.getElementById('sw-count');
+  const btn=document.getElementById('sw-clear-btn');
+  if(cnt)cnt.textContent=customSW.size>0?customSW.size+' word'+(customSW.size>1?'s':'')+' excluded':'';
+  if(btn)btn.style.display=customSW.size>0?'inline-block':'none';
 }
-
-function importBlock() {
-  const ta = document.getElementById('sw-block');
-  if (!ta || !ta.value.trim()) return;
-  addTag(ta.value);
-  ta.value = '';
-  toast('Words imported');
-}
-
-function clearBlockArea() {
-  const ta = document.getElementById('sw-block');
-  if (ta) ta.value = '';
-}
-
-function clearAllTags() {
-  customSW.clear();
-  renderTags();
-}
-
-function addTag(raw) {
-  const words = raw.split(/[,;\s]+/).map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
-  words.forEach(w => customSW.add(w));
-  renderTags();
-}
-
-function removeTag(w) {
-  customSW.delete(w);
-  renderTags();
-}
-
-const SW=new Set(['a','à','ao','aos','as','às','com','da','das','de','do','dos','e','em','entre','era','esse','esta','este','eu','foi','há','isso','isto','já','lhe','lhes','mais','mas','me','mesmo','meu','minha','muito','na','nas','nem','no','nos','nós','nossa','nosso','nossas','nossos','num','numa','o','os','ou','para','pela','pelas','pelo','pelos','por','qual','quando','que','quem','se','sem','ser','seu','seus','sua','suas','também','te','tem','tendo','ter','tu','tua','tuas','tudo','teu','teus','um','uma','uns','umas','você','vocês','vos','vossa','vossas','vosso','vossos','the','and','for','of','in','is','it','was','on','at','be','by','an','as','or','from','that','are','were','has','have','not','but','its','this','they','can','will','about','which','when','who','how','all','with','their','there','been','would','could','should','into','then','than','each','also','may','other','after','first','she','he','his','her','our','your','my','we','us','if','up','out','so','do','did','been','its','than','these','those','some','such','no','nor','too','very','just','because','while','although','however','therefore','thus','hence','since','whether','though','yet','still','between','through','during','before','after','above','below','from','down','out','over','under','again','further','then','once','both','few','more','most','other','some','such']);
+function importBlock(){const ta=document.getElementById('sw-block');if(!ta||!ta.value.trim())return;addTag(ta.value);ta.value='';toast('Words imported')}
+function clearBlockArea(){const ta=document.getElementById('sw-block');if(ta)ta.value=''}
+function clearAllTags(){customSW.clear();renderTags()}
+function addTag(raw){raw.normalize('NFKC').split(/[,;\s]+/).map(w=>w.trim().toLowerCase()).filter(w=>w.length>0).forEach(w=>customSW.add(w));renderTags()}
+function removeTag(w){customSW.delete(w);renderTags()}
 
 let files=[];
 let netData=null;
-
-function tok(t,minLen){return(t.match(/\b[a-zA-ZÀ-ÿ\u00C0-\u024F]+\b/g)||[]).filter(w=>w.length>=minLen)}
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
 function renderFiles(){
   const l=document.getElementById('files');
   if(!files.length){l.innerHTML='';return}
   l.innerHTML=files.map((f,i)=>`<div class="frow"><svg style="color:var(--ac);flex-shrink:0" width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true"><rect x="2" y="1" width="9" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2" fill="none"/><line x1="4.5" y1="5" x2="8.5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="8" x2="8.5" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="11" x2="7" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="fn" title="${esc(f.name)}">${esc(f.name)}</span><span class="fw">${f.done?f.wc.toLocaleString('en-GB')+' words':f.err?'Error':'...'}</span><div class="pb"><div class="pbar"><div class="pfill" style="width:${f.p}%"></div></div></div><button class="frm" onclick="rmFile(${i})" title="Remove">&times;</button></div>`).join('')
 }
-
-function checkGenBtn(){
-  document.getElementById('btn-gen').disabled=!files.some(f=>f.done);
-}
-
+function checkGenBtn(){document.getElementById('btn-gen').disabled=!files.some(f=>f.done)}
 function rmFile(i){files.splice(i,1);renderFiles();checkGenBtn();netData=null;document.getElementById('results').style.display='none'}
 function clearAll(){files=[];renderFiles();checkGenBtn();netData=null;document.getElementById('results').style.display='none';document.getElementById('msg').innerHTML=''}
 
-async function processFile(file,idx){
+// Extract text page by page, keeping real line breaks (hasEOL).
+// The entry object (not an index) is updated, so removing another file mid-processing is safe.
+async function processFile(file,entry){
   try{
     const ab=await file.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-    let text='';
+    const pages=[];
     for(let p=1;p<=pdf.numPages;p++){
       const pg=await pdf.getPage(p);
       const ct=await pg.getTextContent();
-      text+=ct.items.map(i=>i.str).join(' ')+'\n';
-      files[idx].p=Math.round(p/pdf.numPages*100);renderFiles();
+      let s='';
+      for(const it of ct.items){
+        s+=it.str;
+        if(it.hasEOL)s+='\n';else if(it.str&&!/\s$/.test(it.str))s+=' ';
+      }
+      pages.push(s.normalize('NFKC'));
+      entry.p=Math.round(p/pdf.numPages*100);
+      if(files.includes(entry))renderFiles();
     }
-    files[idx].text=text;
-    files[idx].wc=tok(text,2).length;
-    files[idx].done=true;files[idx].p=100;
-    renderFiles();checkGenBtn();
-  }catch(e){files[idx].err=true;files[idx].p=0;renderFiles();showMsg('Error processing "'+file.name+'": '+e.message)}
+    entry.pages=pages;
+    entry.wc=tok(pages.join('\n'),2).length;
+    entry.done=true;entry.p=100;
+    if(files.includes(entry)){renderFiles();checkGenBtn();}
+  }catch(e){entry.err=true;entry.p=0;if(files.includes(entry)){renderFiles();showMsg('Error processing "'+file.name+'": '+e.message)}}
 }
 
 function handleFiles(nf){
@@ -467,61 +461,128 @@ function handleFiles(nf){
   if(!pdfs.length){showMsg('Only PDF files are supported.');return}
   pdfs.forEach(file=>{
     if(files.some(f=>f.name===file.name&&f.size===file.size)){showMsg('"'+file.name+'" has already been added.');return}
-    const idx=files.length;
-    files.push({name:file.name,size:file.size,text:'',wc:0,p:0,done:false,err:false});
-    renderFiles();processFile(file,idx);
+    const entry={name:file.name,size:file.size,pages:[],wc:0,p:0,done:false,err:false};
+    files.push(entry);
+    renderFiles();processFile(file,entry);
   });
 }
-
 function showMsg(t){const a=document.getElementById('msg');a.innerHTML=`<p class="err">${esc(t)}</p>`;setTimeout(()=>a.innerHTML='',5000)}
+
+// ---------- Cleaning ----------
+const REF_HEAD=/^\s*(?:\d+\.?\s*)?(references|reference list|bibliography|literature cited|works cited|referências(?: bibliográficas)?|referencias(?: bibliográficas)?|bibliografia)\s*:?\s*$/i;
+function lineKey(l){return l.trim().toLowerCase().replace(/\d+/g,'#').replace(/\s+/g,' ')}
+
+function cleanDoc(pages,opt){
+  let pg=pages.map(p=>p.split('\n'));
+  // 1) Remove running headers/footers: short lines repeated on many pages
+  if(opt.headers&&pg.length>=3){
+    // only the first/last 3 non-empty lines of a page are candidates, so body text is never touched
+    const edge=lines=>{const ne=lines.map((l,i)=>[l,i]).filter(([l])=>l.trim());return new Set(ne.slice(0,3).concat(ne.slice(-3)).map(([,i])=>i))};
+    const cnt={};
+    pg.forEach(lines=>{const e=edge(lines);new Set([...e].map(i=>lineKey(lines[i])).filter(k=>k.length>0&&k.length<=120)).forEach(k=>cnt[k]=(cnt[k]||0)+1)});
+    const thr=Math.max(3,Math.ceil(pg.length*0.5));
+    pg=pg.map(lines=>{const e=edge(lines);return lines.filter((l,i)=>!(e.has(i)&&(cnt[lineKey(l)]||0)>=thr))});
+  }
+  let lines=pg.flatMap(l=>l.concat(['\u0000'])); // page break marker
+  // 2) Cut reference list (last matching heading in the second half of the document)
+  if(opt.refs){
+    let cut=-1;
+    for(let i=lines.length-1;i>=Math.floor(lines.length*0.4);i--){if(REF_HEAD.test(lines[i])){cut=i;break}}
+    if(cut>0)lines=lines.slice(0,cut);
+  }
+  // 3) Rebuild text: join hyphenated line breaks, join wrapped lines, keep breaks after short lines (headings, table cells)
+  let out='';
+  for(let i=0;i<lines.length;i++){
+    const l=lines[i];
+    if(l==='\u0000'){out+='\n';continue}
+    const t=l.replace(/\s+$/,'');
+    if(!t.trim()){out+='\n';continue}
+    if(/\p{Ll}-$/u.test(t)&&i+1<lines.length&&/^\s*\p{Ll}/u.test(lines[i+1]||'')){out+=t.slice(0,-1);continue}
+    out+=t+(t.trim().length<40?'\n':' ');
+  }
+  // 4) Strip URLs, DOIs and e-mail addresses so their fragments (org, marpol, elsevier) do not become terms
+  out=out.replace(/(?:https?:\/\/|www\.)\S+|\bdoi(?:\.org\/|:\s*)\S+|\b10\.\d{4,9}\/\S+|\S+@\S+\.\S+/gi,' ');
+  return out;
+}
+
+// Sentence split: a stop only counts if followed by whitespace/end, so decimals (3.5),
+// URLs/DOIs and abbreviations such as "et al." and "e.g." do not break sentences.
+const ABBR=/\b(et al|e\.g|i\.e|cf|fig|figs|eq|eqs|vol|vols|no|nos|pp|approx|vs|viz|resp|dr|prof|sr|sra|ed|eds|n\.d)\./gi;
+function splitSentences(text){
+  const t=text.replace(ABBR,m=>m.slice(0,-1)+'․');
+  return t.split(/[.!?…]+(?=\s|$)|\n+/).filter(s=>s.trim().length>5);
+}
+
+function readOpts(){
+  const g=id=>{const e=document.getElementById(id);return e?e.checked:true};
+  return{refs:g('o-refs'),headers:g('o-headers'),academic:g('o-acad'),plurals:document.getElementById('o-plural')?document.getElementById('o-plural').checked:false};
+}
 
 function generate(){
   const done=files.filter(f=>f.done);
   if(!done.length){showMsg('Upload at least one PDF first.');return}
-  const allText=done.map(f=>f.text).join('\n');
-  const minFreq=parseInt(document.getElementById('p-minfreq').value);
-  const minCooc=parseInt(document.getElementById('p-mincooc').value);
-  const maxW=parseInt(document.getElementById('p-maxw').value);
-  const minLen=parseInt(document.getElementById('p-minlen').value);
-  netData=buildNetwork(allText,minFreq,minCooc,maxW,minLen);
-  renderResults(netData,allText,done.length);
+  const minFreq=parseInt(document.getElementById('p-minfreq').value)||1;
+  const minCooc=parseInt(document.getElementById('p-mincooc').value)||1;
+  const maxW=parseInt(document.getElementById('p-maxw').value)||100;
+  const minLen=parseInt(document.getElementById('p-minlen').value)||3;
+  const opt=readOpts();
+  const docs=done.map(f=>cleanDoc(f.pages,opt));
+  netData=buildNetwork(docs,minFreq,minCooc,maxW,minLen,opt);
+  renderResults(netData,docs,done.length);
 }
 
-function buildNetwork(text,minFreq,minCooc,maxW,minLen){
-  const sentences=text.split(/[.!?\n]+/).filter(s=>s.trim().length>5);
-  const freq={};
-  sentences.forEach(sent=>{
-    const ws=new Set(tok(sent,minLen).map(w=>w.toLowerCase()).filter(w=>!SW.has(w)&&!customSW.has(w)));
-    ws.forEach(w=>freq[w]=(freq[w]||0)+1);
+// Occurrences = full count of the term; Sentences/Documents = units containing it.
+// Link strength = number of sentences in which both terms occur.
+function buildNetwork(docs,minFreq,minCooc,maxW,minLen,opt){
+  const stop=w=>SW.has(w)||customSW.has(w)||(opt.academic&&SW_ACADEMIC.has(w));
+  const docSents=docs.map(d=>splitSentences(d).map(s=>tok(s,minLen).map(w=>w.toLowerCase()).filter(w=>!stop(w))));
+  // optional plural merge: "ports" -> "port" when the singular also occurs
+  let canon=w=>w;
+  if(opt.plurals){
+    const raw={};docSents.forEach(ss=>ss.forEach(ws=>ws.forEach(w=>raw[w]=(raw[w]||0)+1)));
+    const map={};
+    Object.keys(raw).forEach(w=>{
+      if(/ies$/.test(w)&&raw[w.slice(0,-3)+'y'])map[w]=w.slice(0,-3)+'y';
+      else if(/ses$/.test(w)&&raw[w.slice(0,-2)])map[w]=w.slice(0,-2);
+      else if(/[^s]s$/.test(w)&&raw[w.slice(0,-1)]&&w.length>3)map[w]=w.slice(0,-1);
+    });
+    canon=w=>map[w]||w;
+  }
+  const occ={},sentF={},docF={};
+  const sentSets=[];
+  docSents.forEach(ss=>{
+    const inDoc=new Set();
+    ss.forEach(ws=>{
+      const cw=ws.map(canon);
+      cw.forEach(w=>{occ[w]=(occ[w]||0)+1;inDoc.add(w)});
+      const set=new Set(cw);set.forEach(w=>sentF[w]=(sentF[w]||0)+1);
+      sentSets.push(set);
+    });
+    inDoc.forEach(w=>docF[w]=(docF[w]||0)+1);
   });
-  const vocab=Object.entries(freq).filter(([,c])=>c>=minFreq).sort((a,b)=>b[1]-a[1]).slice(0,maxW).map(([w])=>w);
-  const vset=new Set(vocab);
+  const vocab=Object.entries(occ).filter(([,c])=>c>=minFreq).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,maxW).map(([w])=>w);
   const wid={};vocab.forEach((w,i)=>wid[w]=i+1);
   const cooc={};
-  sentences.forEach(sent=>{
-    const ws=[...new Set(tok(sent,minLen).map(w=>w.toLowerCase()).filter(w=>vset.has(w)))];
+  sentSets.forEach(set=>{
+    const ws=[...set].filter(w=>wid[w]);
     for(let i=0;i<ws.length;i++)for(let j=i+1;j<ws.length;j++){
       const a=wid[ws[i]],b=wid[ws[j]];
-      const k=a<b?`${a}-${b}`:`${b}-${a}`;
+      const k=a<b?a+'-'+b:b+'-'+a;
       cooc[k]=(cooc[k]||0)+1;
     }
   });
-  const items=vocab.map((w,i)=>({id:i+1,label:w,weights:{Occurrences:freq[w]}}));
+  const items=vocab.map((w,i)=>({id:i+1,label:w,weights:{Occurrences:occ[w],Sentences:sentF[w],Documents:docF[w]}}));
   const links=Object.entries(cooc).filter(([,v])=>v>=minCooc).map(([k,v])=>{const[s,t]=k.split('-').map(Number);return{source_id:s,target_id:t,strength:v}});
   return{network:{items,links}};
 }
 
-function renderResults(nd,allText,nDocs){
-  const words=tok(allText,2).length;
-  const sents=allText.split(/[.!?\n]+/).filter(s=>s.trim().length>5).length;
-  const items=nd.network.items;
-  const links=nd.network.links;
+function renderResults(nd,docs,nDocs){
+  const all=docs.join('\n');
+  const words=tok(all,2).length;
+  const sents=splitSentences(all).length;
+  const items=nd.network.items,links=nd.network.links;
   document.getElementById('sgrid').innerHTML=[
-    ['Terms in network',items.length,true],
-    ['Links',links.length,false],
-    ['Total words',words.toLocaleString('en-GB'),false],
-    ['Sentences',sents.toLocaleString('en-GB'),false],
-    ['Files',nDocs,false],
+    ['Terms in network',items.length,true],['Links',links.length,false],['Total words',words.toLocaleString('en-GB'),false],['Sentences',sents.toLocaleString('en-GB'),false],['Files',nDocs,false],
   ].map(([l,v,h])=>`<div class="sc"><span class="sl">${l}</span><span class="sv${h?' hi':''}">${v}</span></div>`).join('');
   document.getElementById('net-items').innerHTML=items.slice(0,80).map(it=>`<span class="ni">${esc(it.label)}<span class="nc">${it.weights.Occurrences}</span></span>`).join('');
   document.getElementById('results').style.display='block';
@@ -534,12 +595,11 @@ function downloadJSON(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='vosviewer-network.json';a.click();URL.revokeObjectURL(a.href);
   toast('JSON downloaded');
 }
-
 function downloadCSV(){
   if(!netData)return;
-  let csv='Term,Frequency\n';
-  netData.network.items.forEach(it=>csv+=`"${it.label}",${it.weights.Occurrences}\n`);
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='word-frequencies.csv';a.click();URL.revokeObjectURL(a.href);
+  let csv='﻿Term,Occurrences,Sentences,Documents\n';
+  netData.network.items.forEach(it=>csv+=`"${it.label.replace(/"/g,'""')}",${it.weights.Occurrences},${it.weights.Sentences},${it.weights.Documents}\n`);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='word-frequencies.csv';a.click();URL.revokeObjectURL(a.href);
   toast('CSV exported');
 }
 
