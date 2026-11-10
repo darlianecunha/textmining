@@ -28,7 +28,8 @@ For a directed, controlled-vocabulary approach (you define the terms and the app
   - Minimum co-occurrence between terms
   - Maximum number of words in the network
   - Minimum character length per word
-- Automatic stopwords in Portuguese and English
+- Automatic stopwords in seven languages (English, Portuguese, Spanish, Italian, French, German, Dutch); the language of each document is detected and the matching list applied, or you can choose the languages yourself
+- Each file shows pages, words and detected language, with a warning when a PDF has little text (scanned or image-only)
 - Custom stopwords via the interface
 - Export of the VOSviewer JSON
 - Export of frequencies as CSV
