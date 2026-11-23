@@ -10,7 +10,7 @@
 
 ## About the project
 
-PDFWords lets you load one or more PDF files, extract the text locally (with nothing sent to a server), process the words and generate a JSON file in the format accepted by [VOSviewer Online](https://app.vosviewer.com). With that file you can visualise word co-occurrence maps in seconds.
+PDFWords lets you load one or more PDF files (Word .docx and plain .txt files also work), extract the text locally (with nothing sent to a server), process the words and generate a JSON file in the format accepted by [VOSviewer Online](https://app.vosviewer.com). With that file you can visualise word co-occurrence maps in seconds.
 
 It is especially useful for researchers carrying out bibliometric analyses, systematic literature reviews and text-mining studies.
 
@@ -20,7 +20,7 @@ For a directed, controlled-vocabulary approach (you define the terms and the app
 
 ## Features
 
-- Upload of multiple PDFs by drag & drop or selection
+- Upload of multiple PDF, Word (.docx) and text (.txt) files by drag & drop or selection
 - 100% local text extraction (no data sent anywhere)
 - Generation of a word co-occurrence network in the VOSviewer JSON format
 - Configurable parameters:
@@ -33,6 +33,8 @@ For a directed, controlled-vocabulary approach (you define the terms and the app
 - Custom stopwords via the interface, or by clicking a term in the result to exclude it and regenerate
 - Optional compound terms (shore power, climate change): adjacent words that occur together at least the number of times you set, and in at least 15% of the occurrences of the rarer word, become one term; a second pass builds three-word terms
 - Thesaurus to merge or remove terms (`term, replace by`, one rule per line), compatible with VOSviewer thesaurus files; terms can have several words (`carbon dioxide, co2`)
+- Optional plural merging for English, Portuguese, Spanish, French, Italian, German and Dutch, applied by document language and only when the singular also occurs in the files
+- Network preview inside the app (most frequent terms, strongest links, groups of co-occurring terms), with SVG export
 - Export of the VOSviewer JSON
 - Export of frequencies as CSV
 - Export of a term × document matrix as CSV (occurrences of each network term in each file)
@@ -46,13 +48,15 @@ For a directed, controlled-vocabulary approach (you define the terms and the app
 ## How to use
 
 1. Go to [text-umber-delta.vercel.app](https://text-umber-delta.vercel.app)
-2. Drag your PDFs into the upload area (or click to select)
+2. Drag your files into the upload area (or click to select)
 3. Adjust the network parameters as needed
 4. Click **Generate co-occurrence network**
 5. Download the generated JSON
 6. Open [app.vosviewer.com](https://app.vosviewer.com), click **Open** → **VOSviewer JSON file** and load the file
 
-> **Note:** scanned PDFs (image only) need OCR before processing.
+> **Note:** scanned PDFs (image only) need OCR before processing. Older .doc files must be saved as .docx or PDF first.
+>
+> The in-app preview is a quick check: its layout and clusters are simpler than those of VOSviewer and will differ from the final map.
 
 ### Compound terms and thesaurus
 
