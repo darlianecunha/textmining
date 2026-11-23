@@ -30,9 +30,14 @@ For a directed, controlled-vocabulary approach (you define the terms and the app
   - Minimum character length per word
 - Automatic stopwords in seven languages (English, Portuguese, Spanish, Italian, French, German, Dutch); the language of each document is detected and the matching list applied, or you can choose the languages yourself
 - Each file shows pages, words and detected language, with a warning when a PDF has little text (scanned or image-only)
-- Custom stopwords via the interface
+- Custom stopwords via the interface, or by clicking a term in the result to exclude it and regenerate
+- Optional compound terms (shore power, climate change): adjacent words that occur together at least the number of times you set, and in at least 15% of the occurrences of the rarer word, become one term; a second pass builds three-word terms
+- Thesaurus to merge or remove terms (`term, replace by`, one rule per line), compatible with VOSviewer thesaurus files; terms can have several words (`carbon dioxide, co2`)
 - Export of the VOSviewer JSON
 - Export of frequencies as CSV
+- Export of a term × document matrix as CSV (occurrences of each network term in each file)
+- Method summary generated for each run, ready to paste into the methods section of a paper
+- Parameters, exclusion list and thesaurus remembered in the browser (localStorage, nothing is sent anywhere), with a reset link
 - Direct opening in VOSviewer Online
 - Responsive and accessible interface
 
@@ -48,6 +53,21 @@ For a directed, controlled-vocabulary approach (you define the terms and the app
 6. Open [app.vosviewer.com](https://app.vosviewer.com), click **Open** → **VOSviewer JSON file** and load the file
 
 > **Note:** scanned PDFs (image only) need OCR before processing.
+
+### Compound terms and thesaurus
+
+Compound detection is off by default. Stopwords and punctuation break a compound, so "port of Rotterdam" is not detected automatically; add it to the thesaurus instead. The words inside a compound term are counted as the compound, not separately.
+
+Thesaurus example:
+
+```
+emissions, emission
+carbon dioxide, co2
+onshore power supply, shore power
+rotterdam,
+```
+
+The last line has an empty second column, which removes the term. Rules are applied before stopwords, plural merging and compound detection.
 
 ---
 
