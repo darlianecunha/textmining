@@ -438,7 +438,7 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
     <span class="logo-tx">TextMapReady <span class="ac">Words</span></span>
     <p>Developed by <strong style="color:var(--tx2)">Darliane Ribeiro Cunha</strong></p>
     <p>Files are processed in your browser and never uploaded &middot; No data is stored &middot; VOSviewer JSON compatible</p>
-    <p>How to cite: Cunha, D. R. (2026). <em>TextMapReady Words: bibliometric text mining for VOSviewer co-occurrence networks</em> [Software]. Zenodo. <a href="https://doi.org/10.5281/zenodo.20708534" style="color:var(--ac)">https://doi.org/10.5281/zenodo.20708534</a> &middot; Formerly PDFWords &middot; Companion tool: <a href="https://textmining2.vercel.app" style="color:var(--ac)">TextMapReady Terms</a></p>
+    <p>How to cite: Cunha, D. R. (2026). <em>TextMapReady Words: bibliometric text mining for VOSviewer co-occurrence networks</em> [Software]. Zenodo. <a href="https://doi.org/10.5281/zenodo.20708533" style="color:var(--ac)">https://doi.org/10.5281/zenodo.20708533</a> &middot; Formerly PDFWords &middot; Companion tool: <a href="https://textmining2.vercel.app" style="color:var(--ac)">TextMapReady Terms</a></p>
   </div>
 </footer>
 
@@ -883,7 +883,7 @@ function methodText(nd,r,words,sents){
   t+='Words with at least '+r.minLen+' characters were counted in full. Terms with at least '+pl(r.minFreq,'occurrence')+' were retained, up to a maximum of '+r.maxW+' terms. ';
   t+='Two terms were linked when they occurred in the same sentence, with link strength equal to the number of such sentences, and links with a strength below '+r.minCooc+' were discarded. ';
   t+='The resulting network has '+pl(items,'term')+' and '+pl(links,'link')+' and was visualised in VOSviewer Online (app.vosviewer.com).';
-  t+='\n\nReference: Cunha, D. R. (2026). TextMapReady Words: bibliometric text mining for VOSviewer co-occurrence networks [Software]. Zenodo. https://doi.org/10.5281/zenodo.20708534';
+  t+='\n\nReference: Cunha, D. R. (2026). TextMapReady Words: bibliometric text mining for VOSviewer co-occurrence networks [Software]. Zenodo. https://doi.org/10.5281/zenodo.20708533';
   return t;
 }
 function copyMethod(){

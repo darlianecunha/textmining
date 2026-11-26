@@ -1,8 +1,10 @@
-# PDFWords — Co-occurrence network for VOSviewer
+# TextMapReady Words: co-occurrence network for VOSviewer
+
+*Formerly PDFWords.* Live app: https://text-umber-delta.vercel.app
 
 **A bibliometric and text-mining tool that turns PDFs into word co-occurrence networks compatible with VOSviewer.**
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20708534.svg)](https://doi.org/10.5281/zenodo.20708534)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20708533.svg)](https://doi.org/10.5281/zenodo.20708533)
 
 🔗 **Live demo:** [text-umber-delta.vercel.app](https://text-umber-delta.vercel.app)
 
@@ -10,11 +12,11 @@
 
 ## About the project
 
-PDFWords lets you load one or more PDF files (Word .docx and plain .txt files also work), extract the text locally (with nothing sent to a server), process the words and generate a JSON file in the format accepted by [VOSviewer Online](https://app.vosviewer.com). With that file you can visualise word co-occurrence maps in seconds.
+TextMapReady Words lets you load one or more PDF files (Word .docx and plain .txt files also work), extract the text locally (with nothing sent to a server), process the words and generate a JSON file in the format accepted by [VOSviewer Online](https://app.vosviewer.com). With that file you can visualise word co-occurrence maps in seconds.
 
 It is especially useful for researchers carrying out bibliometric analyses, systematic literature reviews and text-mining studies.
 
-For a directed, controlled-vocabulary approach (you define the terms and the app counts them), see the companion tool [PDFTerms](../keywordsprojeto2).
+For a directed, controlled-vocabulary approach (you define the terms and the app counts them), see the companion tool [TextMapReady Terms](https://textmining2.vercel.app).
 
 ---
 
@@ -94,7 +96,7 @@ All processing happens in the user's browser. No file or data is sent to externa
 
 ## How to cite
 
-> Cunha, D. R. (2026). PDFWords: bibliometric text-mining for VOSviewer co-occurrence networks (v0.1.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.20708534
+> Cunha, D. R. (2026). TextMapReady Words: bibliometric text mining for VOSviewer co-occurrence networks (v0.1.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.20708533
 
 ---
 
