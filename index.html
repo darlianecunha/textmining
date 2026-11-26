@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>PDF Words → VOSviewer</title>
+<title>TextMapReady Words · Text mining for VOSviewer</title>
+<meta name="description" content="TextMapReady Words turns PDF, Word and text files into a VOSviewer co-occurrence network (JSON) in your browser. Free bibliometric text mining by Darliane Ribeiro Cunha. Formerly PDFWords."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -170,7 +171,7 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
         <circle cx="18" cy="18" r="4" stroke="#5DCAA5" stroke-width="1.4" fill="none"/>
         <line x1="21" y1="21" x2="22.5" y2="22.5" stroke="#5DCAA5" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
-      <span class="logo-tx">PDF<span class="ac">Words</span></span>
+      <span class="logo-tx">TextMapReady <span class="ac">Words</span></span>
     </div>
     <nav class="nav">
       <a href="#params">Parameters</a>
@@ -434,9 +435,10 @@ footer p{font-size:12px;color:var(--tx3);margin-top:.3rem}
 
 <footer>
   <div class="wrap">
-    <span class="logo-tx">PDF<span class="ac">Words</span></span>
+    <span class="logo-tx">TextMapReady <span class="ac">Words</span></span>
     <p>Developed by <strong style="color:var(--tx2)">Darliane Ribeiro Cunha</strong></p>
     <p>Files are processed in your browser and never uploaded &middot; No data is stored &middot; VOSviewer JSON compatible</p>
+    <p>How to cite: Cunha, D. R. (2026). <em>TextMapReady Words: bibliometric text mining for VOSviewer co-occurrence networks</em> [Software]. Zenodo. <a href="https://doi.org/10.5281/zenodo.20708534" style="color:var(--ac)">https://doi.org/10.5281/zenodo.20708534</a> &middot; Formerly PDFWords &middot; Companion tool: <a href="https://textmining2.vercel.app" style="color:var(--ac)">TextMapReady Terms</a></p>
   </div>
 </footer>
 
@@ -868,7 +870,7 @@ function methodText(nd,r,words,sents){
   if(o.refs)clean.push('reference lists');
   if(o.headers)clean.push('running headers and footers');
   clean.push('URLs, DOIs and e-mail addresses');
-  let t='Text was extracted from '+pl(r.nDocs,'file')+' ('+pl(words,'word')+', '+pl(sents,'sentence')+') with PDFWords (Cunha, 2026). ';
+  let t='Text was extracted from '+pl(r.nDocs,'file')+' ('+pl(words,'word')+', '+pl(sents,'sentence')+') with TextMapReady Words (Cunha, 2026). ';
   t+='Before counting, '+list(clean)+' were removed. ';
   const sw=[];
   if(langs.length)sw.push('the stopword list'+(langs.length>1?'s':'')+' for '+list(langs)+(r.auto?' (language detected automatically for each document)':''));
@@ -881,7 +883,7 @@ function methodText(nd,r,words,sents){
   t+='Words with at least '+r.minLen+' characters were counted in full. Terms with at least '+pl(r.minFreq,'occurrence')+' were retained, up to a maximum of '+r.maxW+' terms. ';
   t+='Two terms were linked when they occurred in the same sentence, with link strength equal to the number of such sentences, and links with a strength below '+r.minCooc+' were discarded. ';
   t+='The resulting network has '+pl(items,'term')+' and '+pl(links,'link')+' and was visualised in VOSviewer Online (app.vosviewer.com).';
-  t+='\n\nReference: Cunha, D. R. (2026). PDFWords: bibliometric text-mining for VOSviewer co-occurrence networks [Software]. Zenodo. https://doi.org/10.5281/zenodo.20708534';
+  t+='\n\nReference: Cunha, D. R. (2026). TextMapReady Words: bibliometric text mining for VOSviewer co-occurrence networks [Software]. Zenodo. https://doi.org/10.5281/zenodo.20708534';
   return t;
 }
 function copyMethod(){
